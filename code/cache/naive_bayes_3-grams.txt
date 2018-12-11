@@ -1,0 +1,11 @@
+Each line represents the output guess of decoding using the method indicated by the filename.
+Each line is of the form:
+[correct]
+[guess]
+
+A rod is used to catch pink salmon.
+t hee ee eeee ee eeeee eeee eeeeee.
+
+The birch canoe slid on the smooth planks.
+the eeeee eeeee eeee ee eee eeeeee eeeeee.
+

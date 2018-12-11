@@ -1,6 +1,10 @@
+#!/usr/bin/python3
+
 import random
 import sys
 import time
+import string
+import re
 
 from math import inf
 from math import log
@@ -252,7 +256,7 @@ def print_to_file(guesses, correct, formatting, filename, viterbi=False):
             to_print.append(line)
 
     filename += '.txt'
-    file = open(filename, 'w+')
+    file = open('cache/' + filename, 'w+')
     file.write(''.join(to_print))
     file.close()
 
@@ -482,22 +486,28 @@ def viterbi_unigram(sentence, markov_model):
     return message_key
 
 def main():
-    # ----------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------
     # Reading sentences and splitting into plaintext and keys. Also creating a
     # dict that keeps track of what each sentence initially looks like before it
     # is stripped (sent to lowercase and removal of spaces and punctuation) for
     # later formatting purposes.
-    sentences_file = open('sentences.txt','r')
+    sentences_file = open('../docs/sentences.txt','r')
     sentences = sentences_file.readlines()
     sentences_file.close()
 
     orig_sentences = {}
+    punctuated_sentences = [''] * len(sentences)
+    whitespace_sentences = []
     for n in range(len(sentences)):
         stripped = ''.join(sentences[n].strip('.\n').split(' ')).lower()
         orig_sentences.update({stripped : sentences[n].strip('\n')})
-        sentences[n] = stripped
+        punctuated_sentences[n] = stripped
 
-    sentences = set(sentences[0:len(sentences)-1])
+    punctuation_table = str.maketrans(dict.fromkeys(string.punctuation))
+    whitespace_sentences = [s.translate(punctuation_table) for s in punctuated_sentences]
+    sentences = [re.sub(r'\s+', '', s) for s in whitespace_sentences if s != '']
+
+    sentences = set(sentences)
     plaintext = [sentences.pop() for n in range(int(len(sentences) / 2))]
     running_key = list(sentences)
 
@@ -523,7 +533,7 @@ def main():
 
         ciphertext.append(''.join(crypt))
 
-    # ----------------------------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
 
     # Splitting into training and testing sets. Default partition is 80/20.
     train_len = int((len(plaintext) * 4) / 5)
@@ -534,7 +544,7 @@ def main():
     orig_test = {plain : orig_sentences[plain] for plain in plain_test}
 
     # Generating all n-grams up to the specified length.
-    n_grams = generate_ngrams(alphabet, 2)
+    n_grams = generate_ngrams(alphabet, 3)
 
     # Creating baseline for comparison, where each letter is just guessed.
     baseline_acc = 0.

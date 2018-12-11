@@ -1,0 +1,14 @@
+Each line represents the output guess of decoding using the method indicated by the filename.
+Each line is of the form:
+[correct]
+[message guess]
+[key guess]
+
+Four hours of steady work faced us.
+tttt tttat rr tttatt tata taaaa tt.
+fcff cbtnd os eeocrt sdcn ootrd oc.
+
+Help the woman get back to her feet.
+aaaa aaa aaaaa aaa aaaa aa aaa aaaa.
+alph hbv ysafg nia vggb bj lvz xxlx.
+
