@@ -3,9 +3,9 @@ Each line is of the form:
 [correct]
 [guess]
 
-A rod is used to catch pink salmon.
-h eee ee eeee te ehtth egee ehateh.
+The box was thrown beside the parked truck.
+ndd eee eee eeeree eeeeee eee rerree eeeee.
 
-The birch canoe slid on the smooth planks.
-hee eeeee eetee htth eg eee hatehh ehhehe.
+Help the woman get back to her feet.
+ndde eee eeeee ree eeee ee eee rerr.
 

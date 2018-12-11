@@ -5,6 +5,7 @@ import sys
 import time
 import string
 import re
+import argparse
 
 from math import inf
 from math import log
@@ -487,11 +488,20 @@ def viterbi_unigram(sentence, markov_model):
 
 def main():
     # ----------------------------------------------------------------------------
+    # Parses commandline arguments that potentially specify the training/testing
+    # corpus paths and the number of ngrams to evaluate on.
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--path", help="path to where training/testing corpus are", default="../docs/")
+    parser.add_argument("--train", help="training text filename", default="sentences.txt")
+    parser.add_argument("--test", help="testing text filename", default="sentences.txt")
+    parser.add_argument("--ngrams", help="value of n for ngrams to use", default=2)
+    args = parser.parse_args()
+
     # Reading sentences and splitting into plaintext and keys. Also creating a
     # dict that keeps track of what each sentence initially looks like before it
     # is stripped (sent to lowercase and removal of spaces and punctuation) for
     # later formatting purposes.
-    sentences_file = open('../docs/sentences.txt','r')
+    sentences_file = open(args.path + args.train,'r')
     sentences = sentences_file.readlines()
     sentences_file.close()
 
@@ -544,7 +554,7 @@ def main():
     orig_test = {plain : orig_sentences[plain] for plain in plain_test}
 
     # Generating all n-grams up to the specified length.
-    n_grams = generate_ngrams(alphabet, 3)
+    n_grams = generate_ngrams(alphabet, args.ngrams)
 
     # Creating baseline for comparison, where each letter is just guessed.
     baseline_acc = 0.
