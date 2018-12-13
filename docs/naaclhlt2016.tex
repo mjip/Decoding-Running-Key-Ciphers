@@ -60,7 +60,7 @@ The Viterbi algorithm is based on a Hidden Markov Model (HMM) representation of 
 \section{Results}
 
 \section{Future Work}
-Though the results shown were promising, further comparisons could be done through implementing Gibbs sampling or through a simple supervised learning approach, where the relations between the plaintext and keystream were learned based on the ciphertexts. Since the sample space for ciphertext generation is small, this could be in scope.
+Though the results shown were promising, further comparisons could be done through implementing Gibbs sampling or through a simple supervised learning approach, where the relations between the plaintext and keystream were learned based on the ciphertexts. Since the sample space for ciphertext generation is small, this could be in scope. Since Viterbi is proven to be computationally intensive, it was difficult to properly parallelize 
 
 \section{Conclusion}
 We compared the performance of a sampling of different methods that decode running key ciphers against a baseline random guesser, classifers, and with different source texts for training and testing sections. 
