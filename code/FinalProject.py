@@ -529,6 +529,7 @@ def preprocess(filename, length):
     sentences = [re.sub(r'\\xla', '', s) for s in whitespace_sentences]
     sentences = [''.join([i for i in s if i.isalpha()]) for s in sentences]
     sentences = [''.join([i for i in s if not i.isdigit()]) for s in sentences]
+    sentences = [s for s in sentences if s != '']
 
     sentences = set(sentences)
     plaintext = [sentences.pop() for n in range(int(len(sentences) / 2))]
