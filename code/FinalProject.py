@@ -34,6 +34,7 @@ def accuracy(correct, guess):
     """
 
     acc = 0.
+    if len(correct) == 0: return 0
     for n in range(len(correct)):
         if correct[n] == guess[n]: acc += 1.
 
@@ -486,7 +487,7 @@ def viterbi_unigram(sentence, markov_model):
 
     return message_key
 
-def preprocess(filename):
+def preprocess(filename, length):
     """ Reads in sentences from a file and cleans them before converting into the
     plaintexts/ciphertexts to test and train on.
 
@@ -496,7 +497,8 @@ def preprocess(filename):
     later formatting purposes.
 
     Args:
-        file: the path to the file that contains the sentences to be preprocessed.
+        filename: the path to the file that contains the sentences to be preprocessed.
+        length: the minimum sentence length for each sentence
 
     Returns:
         (plaintext, ciphertext, orig_sentences_dict)
@@ -510,13 +512,23 @@ def preprocess(filename):
     punctuated_sentences = [''] * len(sentences)
     whitespace_sentences = []
     for n in range(len(sentences)):
-        stripped = ''.join(sentences[n].strip('.\n').split(' ')).lower()
+        try:
+            stripped = ''.join(sentences[n].strip('.\n').split(' ')).lower()
+        except:
+            break
+        while len(stripped) < length:
+            try: stripped += ''.join(sentences[n+1].strip('.\n').split(' ')).lower()
+            except: break
+            del sentences[n+1]
         orig_sentences.update({stripped : sentences[n].strip('\n')})
         punctuated_sentences[n] = stripped
 
     punctuation_table = str.maketrans(dict.fromkeys(string.punctuation))
     whitespace_sentences = [s.translate(punctuation_table) for s in punctuated_sentences]
     sentences = [re.sub(r'\s+', '', s) for s in whitespace_sentences if s != '']
+    sentences = [re.sub(r'\\xla', '', s) for s in whitespace_sentences]
+    sentences = [''.join([i for i in s if i.isalpha()]) for s in sentences]
+    sentences = [''.join([i for i in s if not i.isdigit()]) for s in sentences]
 
     sentences = set(sentences)
     plaintext = [sentences.pop() for n in range(int(len(sentences) / 2))]
@@ -529,9 +541,8 @@ def preprocess(filename):
     for n in range(len(plaintext)):
         plain = plaintext[n]
         key = running_key[n]
-        if len(key) < len(plain):
-            wraparound = key[0:len(plain)-len(key)]
-            key = ('%s%s' % (key, wraparound))
+
+        while len(plain) > len(key): key += key
 
         if len(plain) < len(key):
             key = key[0:len(plain)]
@@ -552,20 +563,21 @@ def main():
     # corpus paths and the number of ngrams to evaluate on.
     parser = argparse.ArgumentParser()
     parser.add_argument("--path", help="path to where training/testing corpus are", default="../docs/")
-    parser.add_argument("--train", help="training text filename", default="sentences.txt")
-    parser.add_argument("--test", help="testing text filename", default="sentences.txt")
+    parser.add_argument("--train", help="training text filename", default="gutenberg.txt")
+    parser.add_argument("--test", help="testing text filename", default="brown.txt")
     parser.add_argument("--ngrams", help="value of n for ngrams to use", default=2)
+    parser.add_argument("--length", help="minimum plain/ciphertext length", default=100)
     args = parser.parse_args()
 
     # ---------------------------------------------------------------------------
     # Preprocess training/testing data specified
     same_corpora = False
     if args.train == args.test:
-        plaintext, ciphertext, orig_sentences = preprocess(args.path + args.train)
+        plaintext, ciphertext, orig_sentences = preprocess(args.path + args.train, args.length)
         same_corpora = True
     else:
-        plain_test, cipher_test, orig_sentences_test = preprocess(args.path + args.test)
-        plain_train, cipher_train, orig_sentences_train = preprocess(args.path + args.train)
+        plain_test, cipher_test, orig_sentences_test = preprocess(args.path + args.test, args.length)
+        plain_train, cipher_train, orig_sentences_train = preprocess(args.path + args.train, args.length)
 
     # ---------------------------------------------------------------------------
 
@@ -577,9 +589,10 @@ def main():
         plain_test = plaintext[train_len:]
         cipher_train = ciphertext[:train_len]
         cipher_test = ciphertext[train_len:]
-        orig_test = {plain : orig_sentences[plain] for plain in plain_test}
-    else:
-        orig_test = {plain : orig_sentences_test[plain] for plain in plain_test}
+        #orig_test = {plain : orig_sentences[plain] for plain in plain_test}
+#    else:
+        #orig_test = {plain : orig_sentences_test[plain] for plain in plain_test if plain != ''}
+
 
     # Generating all n-grams up to the specified length.
     alphabet = list('abcdefghijklmnopqrstuvwxyz')
@@ -599,7 +612,7 @@ def main():
         baseline_acc += accuracy(plain_test[n], baseline_guess)
 
     filename = 'baseline'
-    print_to_file(baseline_guesses, plain_test, orig_test, filename)
+    #print_to_file(baseline_guesses, plain_test, orig_test, filename)
     
     baseline_acc /= len(cipher_test)
     print('Accuracy of baseline: %.5f' % baseline_acc)
@@ -649,7 +662,7 @@ def main():
         print('Accuracy of %d-gram Naive Bayes: %.5f' % ((n+1), nb_accuracy))
 
         filename = 'naive_bayes_%d-grams' % (n+1)
-        print_to_file(predictions, plain_test, orig_test, filename)
+        #print_to_file(predictions, plain_test, orig_test, filename)
 
     # Testing logistic regression.
     print('\nTesting logistic regression')
@@ -676,7 +689,7 @@ def main():
         print('Accuracy of %d-gram logistic regression: %.5f' % ((n+1), lr_accuracy))
 
         filename = 'logistic_regression_%d-grams' % (n+1)
-        print_to_file(predictions, plain_test, orig_test, filename)
+        #print_to_file(predictions, plain_test, orig_test, filename)
 
     # Testing support vector machine.
     print('\nTesting support vector machine')
@@ -703,7 +716,7 @@ def main():
         print('Accuracy of %d-gram support vector machine: %.5f' % ((n+1), svm_accuracy))
 
         filename = 'svm_%d-grams' % (n+1)
-        print_to_file(predictions, plain_test, orig_test, filename)
+        #print_to_file(predictions, plain_test, orig_test, filename)
 
     print()
     # Creating the hidden Markov models.
@@ -731,13 +744,13 @@ def main():
         sys.stdout.flush()
 
         filename = 'smoothed_HMM_%d-grams' % (n+1)
-        print_to_file(smoothed_guesses, plain_test, orig_test, filename, True)
+        #print_to_file(smoothed_guesses, plain_test, orig_test, filename, True)
         
         smoothed_acc /= len(cipher_test)
         print('Accuracy of smoothed %d-gram HMM: %.5f' % ((n+1), smoothed_acc))
 
         filename = 'unsmoothed_HMM_%d-grams' % (n+1)
-        print_to_file(unsmoothed_guesses, plain_test, orig_test, filename, True)
+        #print_to_file(unsmoothed_guesses, plain_test, orig_test, filename, True)
         
         unsmoothed_acc /= len(cipher_test)
         print('Accuracy of unsmoothed %d-gram HMM: %.5f' % ((n+1), unsmoothed_acc))
