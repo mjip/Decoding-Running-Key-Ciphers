@@ -1,0 +1,29 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citename{Craig~Bauer}2002]{Bauer:02}
+Christian N.S.~Tate Craig~Bauer.
+\newblock 2002.
+\newblock A statistical attack on the running key cipher.
+\newblock {\em Cryptologia}, 26(4):274.
+
+\bibitem[\protect\citename{Eric~Corlett}2010]{Corlett:10}
+Gerald~Penn Eric~Corlett.
+\newblock 2010.
+\newblock An exact a* method for deciphering letter-substitution ciphers.
+\newblock {\em Proceedings of the 48th Annual Meeting of the Association for
+  Computational Linguistics}, 48(1):1040.
+
+\bibitem[\protect\citename{Griffing}2006]{Griffing:06}
+Alexander Griffing.
+\newblock 2006.
+\newblock Solving the running key cipher with the viterbi algorithm.
+\newblock {\em Cryptologia}, 30(4):361.
+
+\bibitem[\protect\citename{Sravana~Reddy}2012]{Reddy:12}
+Kevin~Knight Sravana~Reddy.
+\newblock 2012.
+\newblock Decoding running key ciphers.
+\newblock {\em Proceedings of the 50th Annual Meeting of the Association for
+  Computational Linguistics}, 50(1):80.
+
+\end{thebibliography}

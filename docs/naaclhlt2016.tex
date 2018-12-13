@@ -25,7 +25,7 @@
 
 \begin{abstract}
  
- Artificial intelligence and natural language processing techniques can be used to decode substitution ciphers given the plaintext and keytext follow conventions of the English language. Groupings of n letters for n as large as 6 can be used in decoding methods comprising the Viterbi algorithm and in classifiers such as Multinomial Naive Bayes, logistic regression and support vector machines. We evaluate these methods with a baseline comparison model.
+ Artificial intelligence and natural language processing techniques can be used to decode substitution ciphers given the plaintext and keytext follow conventions of the English language. Groupings of n letters for n as large as 3 can be used in decoding methods comprising the Viterbi algorithm and in classifiers such as Multinomial Naive Bayes, logistic regression and support vector machines. We evaluate these methods with a baseline comparison model.
  
 \end{abstract}
 
@@ -37,14 +37,38 @@ Since we know the plaintext and keystream are both obtained from the English lan
 
 \section{Related Work}
 
+N-grams were initially proposed as a method of statistical attack for substitution ciphers and further explored by Bauer and Tate, \cite{Bauer:02}. Comparisons were made between different values of N up to 6, and tested on ciphertexts of length 1000 produced from the Project Gutenberg corpus with an average accuracy of 30\%. This provided a foundation with which to base other methods on, but doesn't produce viable plaintexts as a single concept.
+
+Griffing \cite{Griffing:06} employed the Viterbi algorithm, a dynamic programming method for finding the most likely sequence of hidden states or the Viterbi path, in tandem with Hidden Markov models. This method achieves a median 87\% accuracy rate on ciphertexts of length 1000. A shortcoming with this work is that it is computationally intensive, with results searching through $26^5$ states at every position in the ciphertext. It also doesn't perform any comparisons between sources or baselines.
+
+Corlett and Penn \cite{Corlett:10} produced a method that employs the A* search and Viterbi algorithms to decode various ciphertexts sourced from websites. Since this method is exact, it will determine the plaintext and keystream with a 100\% accuracy, however it is computationally involved and can lead to exponential time consumption.
+
+Reddy and Knight \cite{Reddy:12} used a method with Gibbs sampling of n-grams up to 6 to produce iterations of probable plaintext/keystream pairs. They tested their methods on the Wall Street Journal and Project Gutenberg corpuses with varying results depending on which source the keytext and plintext came from. On average, their method consistently produced accuracies of 93\% on ciphertexts of length 1000. A shortcoming of this work is that it was hard to reproduce given the small level of detail in their paper, unfortunately. 
+
 \section{Methods}
+In this paper, we implement an n-gram solution and perform tests with Multinomial Naive Bayes, logistic regression and support vector machine classifiers, as well as implement the Viterbi algorithm and compare its performance based on different corpora and ciphertext length used. 
+
+\subsection{Data Preprocessing}
+Our implementation takes the corpus as a txt input and removes all punctuation and whitespace characters through regex matching before converting to lowercase. Each sentence gets stored as its preprocessed form linked to its raw, human readable form. The spaces need to be rejected in order to properly determine the n-grams of the training corpora, with the methods we used.
+
+\subsection{N-Grams}
+Each corpora is divided as a ratio of 80-20 training-testing for optimal results. All possible n-gram combinations are computed based on the alphabet, then linked to a probability based on the training source text. These probabilities are then fed into the different classifiers for performance comparison as well as being used in the Viterbi calulations.
+
+\subsection{Viterbi Algorithm}
+The Viterbi algorithm is based on a Hidden Markov Model (HMM) representation of the text, where the states represent the letters at each position, the transition probabilities are interpreted as the n-gram frequencies, and the emissions are determined based on those frequencies rather than aligned emission. The most probable 'path' of letters is computed by saving the most probable state sequence for the previously given letters. Both smoothing and unsmoothed HMM results were used for comparison.
 
 \section{Results}
 
 \section{Future Work}
+Though the results shown were promising, further comparisons could be done through implementing Gibbs sampling or through a simple supervised learning approach, where the relations between the plaintext and keystream were learned based on the ciphertexts. Since the sample space for ciphertext generation is small, this could be in scope.
 
 \section{Conclusion}
+We compared the performance of a sampling of different methods that decode running key ciphers against a baseline random guesser, classifers, and with different source texts for training and testing sections. 
 
+\section{Statement of Contribution}
+Victor contributed the code for the data preprocessing, n-gram generation, cache, random guesser, classifier tests, HMM and Viterbi algorithms.
+
+Marie contributed the initial proposal, final report, the results from different corpora, and the code for the argument parsing and data preprocessing.
 
 \bibliography{naaclhlt2016}
 \bibliographystyle{naaclhlt2016}

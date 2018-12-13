@@ -3,9 +3,9 @@ Each line is of the form:
 [correct]
 [guess]
 
-The box was thrown beside the parked truck.
-eee eee eee eeeree eeeeee eee eeeeee eeeee.
+Four hours of steady work faced us.
+eehh hhhhh hh ehhhhh hhhe hehhh he.
 
-Help the woman get back to her feet.
-eeee eee eeeee ree eeee ee eee eeee.
+The box was thrown beside the parked truck.
+eeh hhh hhh hhehhh hhhhhe heh hhhehh hhhhh.
 

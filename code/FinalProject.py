@@ -486,24 +486,25 @@ def viterbi_unigram(sentence, markov_model):
 
     return message_key
 
-def main():
-    # ----------------------------------------------------------------------------
-    # Parses commandline arguments that potentially specify the training/testing
-    # corpus paths and the number of ngrams to evaluate on.
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--path", help="path to where training/testing corpus are", default="../docs/")
-    parser.add_argument("--train", help="training text filename", default="sentences.txt")
-    parser.add_argument("--test", help="testing text filename", default="sentences.txt")
-    parser.add_argument("--ngrams", help="value of n for ngrams to use", default=2)
-    args = parser.parse_args()
+def preprocess(filename):
+    """ Reads in sentences from a file and cleans them before converting into the
+    plaintexts/ciphertexts to test and train on.
 
-    # Reading sentences and splitting into plaintext and keys. Also creating a
-    # dict that keeps track of what each sentence initially looks like before it
-    # is stripped (sent to lowercase and removal of spaces and punctuation) for
-    # later formatting purposes.
-    sentences_file = open(args.path + args.train,'r')
-    sentences = sentences_file.readlines()
-    sentences_file.close()
+    It first reads in sentences and splits into plaintext and keys. It also creates a
+    dict that keeps track of what each sentence initially looks like before it
+    is stripped (sent to lowercase and removal of spaces and punctuation) for
+    later formatting purposes.
+
+    Args:
+        file: the path to the file that contains the sentences to be preprocessed.
+
+    Returns:
+        (plaintext, ciphertext, orig_sentences_dict)
+        The plaintext and ciphertext lists created from the preprocessed data and the
+        dict mapping the scrubbed sentences to their raw form.
+    """
+    with open(filename,'r') as f:                                      
+        sentences = f.readlines()
 
     orig_sentences = {}
     punctuated_sentences = [''] * len(sentences)
@@ -543,17 +544,45 @@ def main():
 
         ciphertext.append(''.join(crypt))
 
+    return (plaintext, ciphertext, orig_sentences)
+
+def main():
+    # ----------------------------------------------------------------------------
+    # Parses commandline arguments that potentially specify the training/testing
+    # corpus paths and the number of ngrams to evaluate on.
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--path", help="path to where training/testing corpus are", default="../docs/")
+    parser.add_argument("--train", help="training text filename", default="sentences.txt")
+    parser.add_argument("--test", help="testing text filename", default="sentences.txt")
+    parser.add_argument("--ngrams", help="value of n for ngrams to use", default=2)
+    args = parser.parse_args()
+
+    # ---------------------------------------------------------------------------
+    # Preprocess training/testing data specified
+    same_corpora = False
+    if args.train == args.test:
+        plaintext, ciphertext, orig_sentences = preprocess(args.path + args.train)
+        same_corpora = True
+    else:
+        plain_test, cipher_test, orig_sentences_test = preprocess(args.path + args.test)
+        plain_train, cipher_train, orig_sentences_train = preprocess(args.path + args.train)
+
     # ---------------------------------------------------------------------------
 
-    # Splitting into training and testing sets. Default partition is 80/20.
-    train_len = int((len(plaintext) * 4) / 5)
-    plain_train = plaintext[:train_len]
-    plain_test = plaintext[train_len:]
-    cipher_train = ciphertext[:train_len]
-    cipher_test = ciphertext[train_len:]
-    orig_test = {plain : orig_sentences[plain] for plain in plain_test}
+    # Splitting into training and testing sets. Default partition is 80/20 if same.
+
+    if same_corpora:
+        train_len = int((len(plaintext) * 4) / 5)
+        plain_train = plaintext[:train_len]
+        plain_test = plaintext[train_len:]
+        cipher_train = ciphertext[:train_len]
+        cipher_test = ciphertext[train_len:]
+        orig_test = {plain : orig_sentences[plain] for plain in plain_test}
+    else:
+        orig_test = {plain : orig_sentences_test[plain] for plain in plain_test}
 
     # Generating all n-grams up to the specified length.
+    alphabet = list('abcdefghijklmnopqrstuvwxyz')
     n_grams = generate_ngrams(alphabet, args.ngrams)
 
     # Creating baseline for comparison, where each letter is just guessed.
