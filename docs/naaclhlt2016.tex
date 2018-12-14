@@ -7,7 +7,8 @@
 \def\naaclpaperid{***} %  Enter the naacl Paper ID here  
 
 \newcommand\BibTeX{B{\sc ib}\TeX}
-
+\newcommand{\specialcell}[2][c]{%
+	\begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
 
 \title{Decoding Running Key Ciphers}
 
@@ -31,8 +32,20 @@
 
 \section{Introduction}
 
-In cryptography, a letter substitution cipher is constructed by inputting a plaintext and a key into a substitution function to produce a ciphertext. The original plaintext can be recovered by inputting the ciphertext and the key into the inverse of the function. A common choice for the substitution scheme is the \em tabula recta, \em where c = (p + r) mod 26 for same-case letters in the English alphabet, where c is the ciphertext, p is the plaintext and r is the keystream. The function is iterated over every letter in the plaintext, presuming the key is truncated if longer than the plaintext or wrapped around if shorter. If the plaintext or key contain patterns that can be deduced, then they can be decoded through the ciphertext by the means of statistical attacks. In the case that the key is perfectly random, never reused, and kept secret, this results in an unbreakable one-time pad. A variation of the substitution cipher, the running key cipher, uses a stream of characters from, for example, a book to create a long non-repeating key. The plaintext is typically preprocessed to remove occurences of whitespace and punctuation.
+In cryptography, a letter substitution cipher is constructed by inputting a plaintext and a key into a substitution function to produce a ciphertext. The original plaintext can be recovered by inputting the ciphertext and the key into the inverse of the function. A common choice for the substitution scheme is the \em tabula recta, \em where c = (p + r) mod 26 for same-case letters in the English alphabet, where c is the ciphertext, p is the plaintext and r is the keystream. The function is iterated over every letter in the plaintext, presuming the key is truncated if longer than the plaintext or wrapped around if shorter. If the plaintext or key contain patterns that can be deduced, then they can be decoded through the ciphertext by the means of statistical attacks. In the case that the key is perfectly random, never reused, and kept secret, this results in an unbreakable one-time pad. A variation of the substitution cipher, the running key cipher, uses a stream of characters from, for example, a book to create a long non-repeating key. The plaintext is typically preprocessed to remove occurences of whitespace and punctuation. An example of a generated ciphertext using this method and the $\emph{tabula recta}$ substitution function is given in Table 1.
 
+\begin{table*}[t]
+	\centering
+	\caption{To encode a message using a running key cipher, letters at corresponding positions in the message and key are added together modulo 26 after being converted to numbers, with 'a' at 0. The ciphertext is composed after these numbers are turned back into letters. This scheme assumes that only the 26 English letters of the alphabet are used.}
+	\begin{tabular}{|c|c|c|}
+		\hline
+		Plaintext & NLPISCOOL & 13 11 15 8 18 2 14 14 11\\
+		Key & FUNFUNFUN & 5 20 13 5 20 13 5 20 13\\
+		Ciphertext & SFCNMPTIY & 18 5 2 13 12 15 19 8 24\\
+		\hline
+	\end{tabular}
+\label{tab:1}
+\end{table*}
 Since we know the plaintext and keystream are both obtained from the English language, our goal is to determine the most likely plaintext and keystream belonging to a subset of English that produced the given ciphertext. 
 
 \section{Related Work}
@@ -62,7 +75,31 @@ $$T_1 = P(k_i | k_{i-n}\dots k_{i-1}) $$
 $$T_2 = P(m_i(k_i) | m_{i-n}(k_{i-n}) \dots m_{i-1}(k_{i-1})) $$
 $$T_3 = max_{k_{i+1}}[V_{i-(n-1) \dots i+1}(k_{i-(n-1)}\dots k_{i+1})]$$
 This product can be vulnerable to underflow, therefore the log probabilities and addition instead of multiplication is used in application.
+
 \section{Results}
+\begin{table*}[t]
+	\centering
+	\caption{The decoding accuracies for extracted plaintext and keystreams with methods used, where S and U in the table denote smoothed and unsmoothed respectively.}
+	\begin{tabular}{|c|c|c|c|c|c|c|c|}
+		\hline
+		\specialcell{Ciphertext \\Length Min} & \specialcell{Source \\Texts} &\specialcell{ Baseline \\Accuracy} & \specialcell{Naive Bayes \\Accuracy} & \specialcell{SVM \\Accuracy} & \specialcell{LR\\ Accuracy} & \specialcell{Viterbi (S) \\Accuracy} & \specialcell{Viterbi (U)\\Accuracy}\\
+		\hline
+		10 & \specialcell{Gutenberg\\ Brown} & \specialcell{3.7\% \\ 3.9\%} & \specialcell{8.0\% \\ 9.9\%}&\specialcell{9.4\% \\ 7.8\%}&\specialcell{7.9\% \\ 7.8\%}&\specialcell{9.6\% \\ 7.9\%}&\specialcell{17.4\% \\ 14.9\%}\\
+		\hline
+		50 & \specialcell{Gutenberg\\ Brown} & \specialcell{3.8\% \\ 3.7\%} & \specialcell{11.2\% \\ 10.5\%}&\specialcell{12.4\% \\ 12.3\%}&\specialcell{13.1\% \\ 13.9\%}&\specialcell{21.4\% \\ 25.0\%}&\specialcell{\textbf{29.4}\% \\ 23.9\%}\\
+		\hline
+		100& \specialcell{Gutenberg\\ Brown} & \specialcell{3.9\% \\ 3.9\%} & \specialcell{13.6\% \\ 12.6\%}&\specialcell{15.7\% \\ 17.6\%}&\specialcell{15.6\% \\ 11.8\%}&\specialcell{26.3\% \\ 23.7\%}&\specialcell{\textbf{36.7}\% \\ 23.4\%}\\
+		\hline
+	\end{tabular}
+	\label{tab:1}
+\end{table*}
+Table 2 shows the average decoding accuracy of all the methods tried against different training and testing texts. The baseline method, which tended to guess random letters for both the plaintext and the key, would have on average around a 4\% accuracy regardless of the source texts and the ciphertext length. The three classifiers, Naive Bayes, Support Vector Machines and Linear Regression, tended to guess plaintexts and keys that were strings of frequent characters, e.g. 'eeee eee ee'. Occasionally, words composed of frequently occurring characters would be predicted, such as 'the' or 'or', but overall these methods remained mostly consistent with their prediction patterns. 
+The Viterbi variations predicted the most English-like plaintext and keys out of all the methods implemented. Since only lower order n-grams were used, the results could have been more stark, but they stand out regardless. Interestingly, the unsmoothed performed better than the +1 smoothing variation, perhaps since the more frequent n-grams got assigned a higher probability rather than redistributing their weight on n-grams that weren't seen at all (because of the statistical anomalies of the English language, this was probably a vast majority). 
+There doesn't appear to be a significant difference between the two source texts at low ciphertext lengths, other than the Project Gutenberg sources slightly outperforming the Brown corpus documents. 
+As the minimum ciphertext length increased so did the accuracy of correct plaintext and keystream characters. This is unsurprising, since the level of message uncertainty is high for shorter plaintexts because the possible English combinations of plaintexts and keys is higher. The message uncertainty approaches some limit close to 0 the longer the length of the ciphertext.
+
+\section{Discussion}
+The results, though inaccurate and difficult to draw reliable conclusions from, were promising and trending upwards. Provided the hardware/optimization techniques for larger n-gram counts, ciphertext lengths and corpus filesizes, the results from Reddy \cite{Reddy:12} and Griffing's \cite{Griffing:06} research could've been reproduced.
 
 \section{Future Work}
 Though the results shown were promising, further comparisons could be done through implementing Gibbs sampling or through a simple supervised learning approach, where the relations between the plaintext and keystream were learned based on the ciphertexts. Since the sample space for ciphertext generation is small, this could be in scope. Since Viterbi is proven to be computationally intensive, it was difficult to properly parallelize and produce results with higher orders of n, which would have been incredibly interesting to see. Future effort with this venture will be directed towards optimization.
