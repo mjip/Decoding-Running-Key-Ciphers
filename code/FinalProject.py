@@ -644,7 +644,7 @@ def main():
     for n in range(len(plain_train_vec)):
         cipher = np.array(cipher_train_vec[n]).reshape(-1, 1)
         plain = np.array(plain_train_vec[n]).reshape(-1, 1).ravel()
-        naive_bayes.partial_fit(cipher, plain)
+        naive_bayes.partial_fit(cipher, plain, classes=np.unique(plain))
 
         test = np.array(cipher_test_vec[n]).reshape(-1, 1)
         predict = naive_bayes.predict(test).tolist()
@@ -671,7 +671,7 @@ def main():
     for n in range(len(plain_train_vec)):
         cipher = np.array(cipher_train_vec[n]).reshape(-1, 1)
         plain = np.array(plain_train_vec[n]).reshape(-1, 1).ravel()
-        log_reg.partial_fit(cipher, plain)
+        log_reg.partial_fit(cipher, plain, classes=np.unique(plain))
 
         test = np.array(cipher_test_vec[n]).reshape(-1, 1)
         predict = log_reg.predict(test).tolist()
@@ -698,7 +698,7 @@ def main():
     for n in range(len(plain_train_vec)):
         cipher = np.array(cipher_train_vec[n]).reshape(-1, 1)
         plain = np.array(plain_train_vec[n]).reshape(-1, 1).ravel()
-        svm.partial_fit(cipher, plain)
+        svm.partial_fit(cipher, plain, classes=np.unique(plain))
 
         test = np.array(cipher_test_vec[n]).reshape(-1, 1)
         predict = svm.predict(test).tolist()
