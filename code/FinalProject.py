@@ -229,7 +229,7 @@ def print_to_file(guesses, correct, formatting, filename, viterbi=False):
     to_print = [intro_message, form]
     if not viterbi:
         for n in range(len(guesses)):
-            format_to_follow = formatting[correct[n]]
+            format_to_follow = correct[n]
             message = list(guesses[n])
             for m in range(len(format_to_follow)):
                 letter = format_to_follow[m]
@@ -237,12 +237,12 @@ def print_to_file(guesses, correct, formatting, filename, viterbi=False):
                     message.insert(m, letter)
 
             message = ''.join(message)
-            line = '%s\n%s\n\n' % (formatting[correct[n]], message)
+            line = '%s\n%s\n\n' % (correct[n], message)
             to_print.append(line)
 
     else:
         for n in range(len(guesses)):
-            format_to_follow = formatting[correct[n]]
+            format_to_follow = correct[n]
             message_guess = list(guesses[n][0])
             key_guess = list(guesses[n][1])
             for m in range(len(format_to_follow)):
@@ -253,7 +253,7 @@ def print_to_file(guesses, correct, formatting, filename, viterbi=False):
 
             message_guess = ''.join(message_guess)
             key_guess = ''.join(key_guess)
-            line = '%s\n%s\n%s\n\n' % (formatting[correct[n]], message_guess,
+            line = '%s\n%s\n%s\n\n' % (correct[n], message_guess,
                                        key_guess)
             to_print.append(line)
 
@@ -565,7 +565,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--path", help="path to where training/testing corpus are", default="../docs/")
     parser.add_argument("--train", help="training text filename", default="brown0000.txt")
-    parser.add_argument("--test", help="testing text filename", default="brown0001.txt")
+    parser.add_argument("--test", help="testing text filename", default="brown0000.txt")
     parser.add_argument("--ngrams", help="value of n for ngrams to use", default=2)
     parser.add_argument("--length", help="minimum plain/ciphertext length", default=100)
     args = parser.parse_args()
@@ -590,11 +590,8 @@ def main():
         plain_test = plaintext[train_len:]
         cipher_train = ciphertext[:train_len]
         cipher_test = ciphertext[train_len:]
-        #orig_test = {plain : orig_sentences[plain] for plain in plain_test}
-#    else:
-        #orig_test = {plain : orig_sentences_test[plain] for plain in plain_test if plain != ''}
 
-
+    orig_test = {}
     # Generating all n-grams up to the specified length.
     alphabet = list('abcdefghijklmnopqrstuvwxyz')
     n_grams = generate_ngrams(alphabet, args.ngrams)
@@ -613,7 +610,7 @@ def main():
         baseline_acc += accuracy(plain_test[n], baseline_guess)
 
     filename = 'baseline'
-    #print_to_file(baseline_guesses, plain_test, orig_test, filename)
+    print_to_file(baseline_guesses, plain_test, orig_test, filename)
     
     baseline_acc /= len(cipher_test)
     print('Accuracy of baseline: %.5f' % baseline_acc)
@@ -720,6 +717,7 @@ def main():
         #print_to_file(predictions, plain_test, orig_test, filename)
 
     print()
+
     # Creating the hidden Markov models.
     hmms_smoothed = get_hmms(plain_train, n_grams)
     hmms_unsmoothed = get_hmms(plain_train, n_grams, False)
@@ -745,13 +743,13 @@ def main():
         sys.stdout.flush()
 
         filename = 'smoothed_HMM_%d-grams' % (n+1)
-        #print_to_file(smoothed_guesses, plain_test, orig_test, filename, True)
+        print_to_file(smoothed_guesses, plain_test, orig_test, filename, True)
         
         smoothed_acc /= len(cipher_test)
         print('Accuracy of smoothed %d-gram HMM: %.5f' % ((n+1), smoothed_acc))
 
         filename = 'unsmoothed_HMM_%d-grams' % (n+1)
-        #print_to_file(unsmoothed_guesses, plain_test, orig_test, filename, True)
+        print_to_file(unsmoothed_guesses, plain_test, orig_test, filename, True)
         
         unsmoothed_acc /= len(cipher_test)
         print('Accuracy of unsmoothed %d-gram HMM: %.5f' % ((n+1), unsmoothed_acc))

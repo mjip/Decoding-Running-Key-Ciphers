@@ -7,8 +7,8 @@
 \def\naaclpaperid{***} %  Enter the naacl Paper ID here  
 
 \newcommand\BibTeX{B{\sc ib}\TeX}
-\newcommand{\specialcell}[2][c]{%
-	\begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+\newcommand{\specialcell}[2][l]{%
+	\begin{tabular}[#1]{@{}l@{}}#2\end{tabular}}
 
 \title{Decoding Running Key Ciphers}
 
@@ -68,7 +68,28 @@ Our implementation takes the corpus as a txt input and removes all punctuation a
 If the same corpus is used for both testing and training, it is divided as a ratio of 80-20 training-testing for optimal results. Our implementation allows for different corpora to be used for testing and for training through command line arguments, however. All possible n-gram combinations are computed based on the alphabet, then linked to a probability based on the training source text. These probabilities are then fed into the different classifiers for performance comparison. Our baseline model doesn't calculate predictions based off of the n-gram frequencies but rather through random estimation of the letters. The Hidden Markov Model predicts the state, transition and emission probabilities through the frequency distribution of n-grams, which is then fed into our implementation of the Viterbi algorithm to predict plaintext/keystream pairs.
 
 \subsection{Viterbi Algorithm}
-The Viterbi algorithm is based on a Hidden Markov Model (HMM) representation of the text, where the states represent the letters at each position, the transition probabilities are interpreted as the n-gram frequencies, and the emissions are determined based on those frequencies rather than aligned emission. The most probable 'path' of letters is computed by saving the most probable state sequence for the previously given letters. Both smoothing and unsmoothed HMM results were used for comparison.
+The Viterbi algorithm is based on a Hidden Markov Model (HMM) representation of the text, where the states represent the letters at each position, the transition probabilities are interpreted as the n-gram frequencies, and the emissions are determined based on those frequencies rather than aligned emission. The most probable 'path' of letters is computed by saving the most probable state sequence for the previously given letters. Both smoothing and unsmoothed HMM results were used for comparison. An example of a plaintext/key pair that the Viterbi algorithm predicted appears in Table 2.
+
+\begin{table*}[t]
+	\centering
+	\caption{A plaintext/key pair predicted with the Viterbi algorithm, with the correct plaintext for comparison.}
+	\begin{tabular}{|l|l|}
+		\hline
+		Correct Plaintext & \specialcell{operatingbudgetforthedayschoolsinthefivecountiesofdallasharrisbexartarrantandelpaso \\wouldbewhichwouldbeasavingsofyearlyafterthefirstyearscapitaloutlayofwasabsorbedp
+		\\arkhousetoldthesenate}\\
+		\hline
+		Predicted Plaintext & \specialcell{attherentstrestiontherethepresthatermenothedthedtheparnofortherethecouramenthedthep
+		\\erethedinatinattheresatementerandayearestativerecalationthessentthatinattheresea
+		\\gersofthentionthenati}\\
+		\hline
+		Predicted Key & \specialcell{ootwenerentangtforpaseaitlleoldonthoredeclepatounsmolsamittrisbeatfeatoredsuneakeis
+		\\aldtafouinodaseldbeatotiteniealrontetparittinestosalscapemolatofaysesasammiasast
+		\\isthourrcestscrstthen}\\
+		\hline
+	\end{tabular}
+	\label{tab:1}
+\end{table*}
+
 The Viterbi algorithm is a dynamic programming algorithm that uses recursion to predict the most probable sequence of hidden states, plaintext/key pairs of letters in this case. Let $n$ be the length of the ciphertext. Then $V_{i-n \dots i}(k_{i-n}\dots k_i)$ is the probability of the most likely partial key from positions $i$ to $n$, represented by $V$. Let $m_i(k_i)$ be the ciphertext character at position $i$ (plaintext letter at position i computed with the tabula recta with the key letter at position i as input). Each ciphertext character can then be represented by the equation:
 $$V_{i-n \dots i}(k_{i-n}\dots k_i) = T_1 T_2 T_3 $$
 $$T_1 = P(k_i | k_{i-n}\dots k_{i-1}) $$
@@ -93,16 +114,20 @@ This product can be vulnerable to underflow, therefore the log probabilities and
 	\end{tabular}
 	\label{tab:1}
 \end{table*}
-Table 2 shows the average decoding accuracy of all the methods tried against different training and testing texts. The baseline method, which tended to guess random letters for both the plaintext and the key, would have on average around a 4\% accuracy regardless of the source texts and the ciphertext length. The three classifiers, Naive Bayes, Support Vector Machines and Linear Regression, tended to guess plaintexts and keys that were strings of frequent characters, e.g. 'eeee eee ee'. Occasionally, words composed of frequently occurring characters would be predicted, such as 'the' or 'or', but overall these methods remained mostly consistent with their prediction patterns. 
-The Viterbi variations predicted the most English-like plaintext and keys out of all the methods implemented. Since only lower order n-grams were used, the results could have been more stark, but they stand out regardless. Interestingly, the unsmoothed performed better than the +1 smoothing variation, perhaps since the more frequent n-grams got assigned a higher probability rather than redistributing their weight on n-grams that weren't seen at all (because of the statistical anomalies of the English language, this was probably a vast majority). 
+Table 3 shows the average decoding accuracy of all the methods tried against different training and testing texts. The baseline method, which tended to guess random letters for both the plaintext and the key, would have on average around a 4\% accuracy regardless of the source texts and the ciphertext length. The three classifiers, Naive Bayes, Support Vector Machines and Linear Regression, tended to guess plaintexts and keys that were strings of frequent characters, e.g. 'eeee eee ee'. Occasionally, words composed of frequently occurring characters would be predicted, such as 'the' or 'or', but overall these methods remained mostly consistent with their prediction patterns. By analyzing the predicted strings, the SVM classifier tended to vary a bit more than the Naive Bayes and Linear Regression algorithms, and it would predict a wider range of frequent letters with slightly better results. Ultimately though, classifiers are not ideal for deciphering running keys and their plaintexts, since n-grams are not considered in their models and they only rely on the statistical attack of picking frequently occurring English letters, instead of candidate English words and phrases.
+The Viterbi variations predicted the most English-like plaintext and keys out of all the methods implemented, as shown in the example in Table 2. Since only lower order n-grams were used, the results could have been more stark, but they stand out regardless. Interestingly, the unsmoothed performed better than the +1 smoothing variation, perhaps since the more frequent n-grams got assigned a higher probability rather than redistributing their weight on n-grams that weren't seen at all (because of the statistical anomalies of the English language, this was probably a vast majority). Out of all the methods used, Viterbi is probably the most suitable for decoding running key ciphertext, as it generates worthy candidate phrases for the keys and message strings. One shortcoming it seems to have is with word boundaries, since spaces have been removed it is disadvantageous for determining proper English words. The Gibbs sampling method \cite{Reddy:12} addresses this issue and takes into account word boundaries in the sample spaces for each iteration. On low ciphertext lengths this difference is more subtle, but on ciphertexts of length 1000 the performance gain is much larger.
+
 There doesn't appear to be a significant difference between the two source texts at low ciphertext lengths, other than the Project Gutenberg sources slightly outperforming the Brown corpus documents. 
+
 As the minimum ciphertext length increased so did the accuracy of correct plaintext and keystream characters. This is unsurprising, since the level of message uncertainty is high for shorter plaintexts because the possible English combinations of plaintexts and keys is higher. The message uncertainty approaches some limit close to 0 the longer the length of the ciphertext.
 
 \section{Discussion}
 The results, though inaccurate and difficult to draw reliable conclusions from, were promising and trending upwards. Provided the hardware/optimization techniques for larger n-gram counts, ciphertext lengths and corpus filesizes, the results from Reddy \cite{Reddy:12} and Griffing's \cite{Griffing:06} research could've been reproduced.
 
 \section{Future Work}
-Though the results shown were promising, further comparisons could be done through implementing Gibbs sampling or through a simple supervised learning approach, where the relations between the plaintext and keystream were learned based on the ciphertexts. Since the sample space for ciphertext generation is small, this could be in scope. Since Viterbi is proven to be computationally intensive, it was difficult to properly parallelize and produce results with higher orders of n, which would have been incredibly interesting to see. Future effort with this venture will be directed towards optimization.
+Though the results shown were promising, further comparisons could be done through implementing Gibbs sampling. Initially we were going to implement Gibbs sampling and extend it by introducing iterations that filtered for valid English words, but Reddy's Decoding Running Key Ciphers \cite{Reddy:12} was lacking in sufficient details and emails sent to the authors for clarity went unanswered.
+
+ Another simple approach using supervised learning can be proposed, where the relations between the plaintext and keystream are learned based on the ciphertexts. Since the sample space for ciphertext generation is small, this could be in scope. Because Viterbi is proven to be hugely computationally intensive, it was difficult to properly parallelize and produce results with higher orders of n for the n-grams, which would have been incredibly interesting to see. Future effort with this venture will be directed towards optimization.
 
 \section{Conclusion}
 We compared the performance of a sampling of different methods that decode running key ciphers against a baseline random guesser, classifers, and with different source texts for training and testing sections. 
