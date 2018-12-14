@@ -564,8 +564,8 @@ def main():
     # corpus paths and the number of ngrams to evaluate on.
     parser = argparse.ArgumentParser()
     parser.add_argument("--path", help="path to where training/testing corpus are", default="../docs/")
-    parser.add_argument("--train", help="training text filename", default="brown00.txt")
-    parser.add_argument("--test", help="testing text filename", default="brown01.txt")
+    parser.add_argument("--train", help="training text filename", default="brown0000.txt")
+    parser.add_argument("--test", help="testing text filename", default="brown0001.txt")
     parser.add_argument("--ngrams", help="value of n for ngrams to use", default=2)
     parser.add_argument("--length", help="minimum plain/ciphertext length", default=100)
     args = parser.parse_args()

@@ -49,18 +49,23 @@ Reddy and Knight \cite{Reddy:12} used a method with Gibbs sampling of n-grams up
 In this paper, we implement an n-gram solution and perform tests with Multinomial Naive Bayes, logistic regression and support vector machine classifiers, as well as implement the Viterbi algorithm and compare its performance based on different corpora and ciphertext length used. 
 
 \subsection{Data Preprocessing}
-Our implementation takes the corpus as a txt input and removes all punctuation and whitespace characters through regex matching before converting to lowercase. Each sentence gets stored as its preprocessed form linked to its raw, human readable form. The spaces need to be rejected in order to properly determine the n-grams of the training corpora, with the methods we used.
+Our implementation takes the corpus as a txt input and removes all punctuation and whitespace characters through regex matching before converting to lowercase. Each sentence gets stored as its preprocessed form linked to its raw, human readable form. The spaces need to be rejected in order to properly determine the n-grams of the training corpora, with the methods we used. All characters that aren't part of the English 26-letter alphabet are removed.
 
 \subsection{N-Grams}
-Each corpora is divided as a ratio of 80-20 training-testing for optimal results. All possible n-gram combinations are computed based on the alphabet, then linked to a probability based on the training source text. These probabilities are then fed into the different classifiers for performance comparison as well as being used in the Viterbi calulations.
+If the same corpus is used for both testing and training, it is divided as a ratio of 80-20 training-testing for optimal results. Our implementation allows for different corpora to be used for testing and for training through command line arguments, however. All possible n-gram combinations are computed based on the alphabet, then linked to a probability based on the training source text. These probabilities are then fed into the different classifiers for performance comparison. Our baseline model doesn't calculate predictions based off of the n-gram frequencies but rather through random estimation of the letters. The Hidden Markov Model predicts the state, transition and emission probabilities through the frequency distribution of n-grams, which is then fed into our implementation of the Viterbi algorithm to predict plaintext/keystream pairs.
 
 \subsection{Viterbi Algorithm}
 The Viterbi algorithm is based on a Hidden Markov Model (HMM) representation of the text, where the states represent the letters at each position, the transition probabilities are interpreted as the n-gram frequencies, and the emissions are determined based on those frequencies rather than aligned emission. The most probable 'path' of letters is computed by saving the most probable state sequence for the previously given letters. Both smoothing and unsmoothed HMM results were used for comparison.
-
+The Viterbi algorithm is a dynamic programming algorithm that uses recursion to predict the most probable sequence of hidden states, plaintext/key pairs of letters in this case. Let $n$ be the length of the ciphertext. Then $V_{i-n \dots i}(k_{i-n}\dots k_i)$ is the probability of the most likely partial key from positions $i$ to $n$, represented by $V$. Let $m_i(k_i)$ be the ciphertext character at position $i$ (plaintext letter at position i computed with the tabula recta with the key letter at position i as input). Each ciphertext character can then be represented by the equation:
+$$V_{i-n \dots i}(k_{i-n}\dots k_i) = T_1 T_2 T_3 $$
+$$T_1 = P(k_i | k_{i-n}\dots k_{i-1}) $$
+$$T_2 = P(m_i(k_i) | m_{i-n}(k_{i-n}) \dots m_{i-1}(k_{i-1})) $$
+$$T_3 = max_{k_{i+1}}[V_{i-(n-1) \dots i+1}(k_{i-(n-1)}\dots k_{i+1})]$$
+This product can be vulnerable to underflow, therefore the log probabilities and addition instead of multiplication is used in application.
 \section{Results}
 
 \section{Future Work}
-Though the results shown were promising, further comparisons could be done through implementing Gibbs sampling or through a simple supervised learning approach, where the relations between the plaintext and keystream were learned based on the ciphertexts. Since the sample space for ciphertext generation is small, this could be in scope. Since Viterbi is proven to be computationally intensive, it was difficult to properly parallelize 
+Though the results shown were promising, further comparisons could be done through implementing Gibbs sampling or through a simple supervised learning approach, where the relations between the plaintext and keystream were learned based on the ciphertexts. Since the sample space for ciphertext generation is small, this could be in scope. Since Viterbi is proven to be computationally intensive, it was difficult to properly parallelize and produce results with higher orders of n, which would have been incredibly interesting to see. Future effort with this venture will be directed towards optimization.
 
 \section{Conclusion}
 We compared the performance of a sampling of different methods that decode running key ciphers against a baseline random guesser, classifers, and with different source texts for training and testing sections. 
@@ -68,7 +73,7 @@ We compared the performance of a sampling of different methods that decode runni
 \section{Statement of Contribution}
 Victor contributed the code for the data preprocessing, n-gram generation, cache, random guesser, classifier tests, HMM and Viterbi algorithms.
 
-Marie contributed the initial proposal, final report, the results from different corpora, and the code for the argument parsing and data preprocessing.
+Marie contributed the initial proposal, final report, the results from different corpora, and the code for the argument parsing, data preprocessing, and adjustments for large datasets.
 
 \bibliography{naaclhlt2016}
 \bibliographystyle{naaclhlt2016}
