@@ -5,8 +5,9 @@ key ciphers with English keystreams and plaintexts. Uses the Brown and Project G
 
 ## Usage
 `python3 FinalProject.py [--path p] [--ngrams n] [--train tr] [--test te] [--length l]`
-where p is the path to the folder for the source texts, tr and te are the training and testing corpora respectively,
-n is the number of ngrams to train up until and l is the minimum length of the ciphertext. The defaults are docs/, 2, 
+
+where p is the path to the folder for the source texts, n is the number of ngrams to train up until, tr and te are the 
+training and testing corpora respectively, and l is the minimum length of the ciphertext. The defaults are docs/, 2, 
 brown0000.txt, brown0000.txt, and 100 in order. 
 
 Project by Victor Redko and Marie Payne  
